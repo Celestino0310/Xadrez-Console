@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Text;
 using tabuleiro;
+using Xadrez;
+using XadrezConsole.Xadrez;
 namespace XadrezConsole
 {
     public class Tela
@@ -55,6 +57,15 @@ namespace XadrezConsole
                 Console.ForegroundColor = aux;
 
             }
+
+        }
+        public static PosicaoXadrez lerPosicaoXadrez()
+        {
+            string s = Console.ReadLine();
+            char coluna = s[0];
+            int linha = int.Parse(s[1] + "");
+            return new PosicaoXadrez(coluna, linha);
+
         }
     }
 }

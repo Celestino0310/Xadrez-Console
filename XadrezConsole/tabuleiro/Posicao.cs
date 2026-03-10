@@ -12,7 +12,7 @@ namespace tabuleiro
         public int Coluna { get; set; }
 
         //criando construtor com duas entradas de dados
-        public Posicao(int coluna,int linha)
+        public Posicao(int linha,int coluna)
         {
             Coluna = coluna;
             Linha =linha;
