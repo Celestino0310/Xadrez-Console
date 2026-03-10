@@ -18,11 +18,11 @@ namespace XadrezConsole
             {
 
                 tabuleiroinicial(tabuleiro);
-
+                tabuleiro.colocarPeca(new Cavalo(tabuleiro,Cor.Branca), new Posicao(4, 4));
                 Tela.imprimirTabuleiro(tabuleiro);
             }
-            catch (Exception ex) {
-
+            catch (TabuleiroException ex) {
+                Console.WriteLine(ex.Message);
             }
         }
         public static void tabuleiroinicial(Tabuleiro tabuleiro){
