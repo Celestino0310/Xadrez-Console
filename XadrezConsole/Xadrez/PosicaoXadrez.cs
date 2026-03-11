@@ -7,18 +7,23 @@ namespace XadrezConsole.Xadrez
 {
     public class PosicaoXadrez
     {
-        public int Colunas { get; set; }
-        public char Linhas { get; set; }
+        public char Coluna { get; set; }   // letra: a-h
+        public int Linha { get; set; }     // número: 1-8
 
-        public PosicaoXadrez(char linhas, int colunas)
+        public PosicaoXadrez(char coluna, int linha)
         {
-            Colunas = colunas;
-            Linhas = linhas;
+            Coluna = coluna;
+            Linha = linha;
         }
 
         public Posicao ToPositionXadrez()
         {
-            return new Posicao(8 - Colunas, Linhas - 'a');
+            return new Posicao(8 - Linha, Coluna - 'a');
+        }
+
+        public override string ToString()
+        {
+            return "" + Coluna + Linha;
         }
     }
 }

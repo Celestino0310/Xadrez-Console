@@ -9,7 +9,11 @@ namespace XadrezConsole.Xadrez
     {
         public Cavalo(Tabuleiro Tab, Cor cor) : base(Tab, cor) { }
 
-
+        public override bool[,] movimentosPossiveis()
+        {
+            bool[,] matriz = new bool[tabuleiro.Linhas, tabuleiro.Colunas];
+            return matriz;
+        }
         public override string ToString()
         {
             return "C";

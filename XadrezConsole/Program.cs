@@ -20,12 +20,19 @@ namespace XadrezConsole
                 PartidaDeXadrez partida = new PartidaDeXadrez();
                 //tentando adicionar som de peça
                 while (partida.Terminada != true) {
+
                     Console.Clear();
                     Tela.imprimirTabuleiro(partida.Tab);
+
                     Console.WriteLine();
                     Console.Write("posição de origem:");
                     Posicao origem =Tela.lerPosicaoXadrez().ToPositionXadrez();
-                    Console.WriteLine("posição destino");
+
+                    bool[,] posicoesPossiveis = partida.Tab.peca(origem).movimentosPossiveis();
+                    Console.Clear();
+                    Tela.imprimirTabuleiro(partida.Tab,posicoesPossiveis);
+
+                    Console.Write("posição destino:");
                     Posicao destino =Tela.lerPosicaoXadrez().ToPositionXadrez();
 
                     partida.MovimentaPeca(origem,destino);

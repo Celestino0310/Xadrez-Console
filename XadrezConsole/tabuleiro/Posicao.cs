@@ -19,6 +19,12 @@ namespace tabuleiro
 
         }
 
+        public void definirValores(int linha, int coluna)
+        {
+            Coluna = coluna;
+            Linha = linha;
+
+        }
         //to string para conseguir
         public override string ToString()
         {
