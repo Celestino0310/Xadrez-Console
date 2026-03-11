@@ -28,7 +28,20 @@ namespace XadrezConsole.Xadrez
             Posicao pos = new Posicao(0, 0);
             if (cor == Cor.Branca)
             {
-                // frente
+                // frente Inicial - pula 2-> refatorar isso para que o peão não pule outros peões
+                if( tabuleiro.peca(pos).qtdMovimentos == 0)
+                {
+                    pos.definirValores(posicao.Linha - 2, posicao.Coluna);
+                    if (tabuleiro.posicaoValida(pos) && podeMover(pos))
+                    {
+                        matriz[pos.Linha, pos.Coluna] = true;
+                    }
+
+                }
+
+
+
+                //frente        
                 pos.definirValores(posicao.Linha - 1, posicao.Coluna);
                 if (tabuleiro.posicaoValida(pos) && podeMover(pos))
                 {
@@ -51,6 +64,16 @@ namespace XadrezConsole.Xadrez
             }
             else
             {  // frente
+                if (tabuleiro.peca(pos).qtdMovimentos == 0)
+                {
+                    pos.definirValores(posicao.Linha + 2, posicao.Coluna);
+                    if (tabuleiro.posicaoValida(pos) && podeMover(pos))
+                    {
+                        matriz[pos.Linha, pos.Coluna] = true;
+                    }
+
+                }
+
                 pos.definirValores(posicao.Linha + 1, posicao.Coluna);
                 if (tabuleiro.posicaoValida(pos) && podeMover(pos))
                 {

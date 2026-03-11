@@ -2,6 +2,7 @@
 using tabuleiro;
 using XadrezConsole.Xadrez;
 using Xadrez;
+
 namespace XadrezConsole
 {
     class Program
@@ -18,17 +19,12 @@ namespace XadrezConsole
             try
             {
                 PartidaDeXadrez partida = new PartidaDeXadrez();
-                //tentando adicionar som de peça
+                //tentando adicionar som de peça Console.Beep(x,y)
                 while (partida.Terminada != true)
                 {
                     try
                     {
-                        Console.Clear();
-                        Tela.imprimirTabuleiro(partida.Tab);
-
-                        Console.WriteLine();
-                        Console.WriteLine("Turno: " + partida.Turno);
-                        Console.WriteLine("Esperando jogada do jogador " + partida.JogadorAtual);
+                        Tela.imprimirPartida(partida);
                         Console.Write("posição de origem:");
                         Posicao origem = Tela.lerPosicaoXadrez().ToPositionXadrez();
                         partida.validarPosicaoDeOrigem(origem);
@@ -47,6 +43,18 @@ namespace XadrezConsole
                         Console.WriteLine(ex.Message);
                     }
                 }
+                Console.WriteLine("XEQUE MATE!!");
+                Console.WriteLine("VENCEDOR JOGADOR :" + partida.JogadorAtual);// ta dando o jogador oposto pois ta passando o turno..tem que arruma isso aqui
+                Console.Beep(1047, 120); // Tu
+                Console.Beep(1047, 120); // tu
+                Console.Beep(1047, 120); // tu
+                Thread.Sleep(60);
+                Console.Beep(1047, 180); // TÚ (nota longa)
+                Thread.Sleep(60);
+                Console.Beep(784, 120); // tu
+                Console.Beep(880, 120); // ru
+                Console.Beep(1047, 400);
+                Console.WriteLine("END GAME");
             }catch (TabuleiroException ex)
             {
                 Console.WriteLine(ex.Message);
