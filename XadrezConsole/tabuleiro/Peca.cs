@@ -17,6 +17,26 @@ namespace tabuleiro
 
         public abstract bool[,] movimentosPossiveis();
 
+        public  bool existeMovimentosPossiveis()
+        {
+            bool[,] mat = movimentosPossiveis();
+            for (int i = 0; i < tabuleiro.Linhas; i++)
+            {
+                for (int j=0; j < tabuleiro.Colunas; j++)
+                {
+                    if (mat[i, j])
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        public bool podeMoverPara(Posicao pos)
+        {
+
+            return movimentosPossiveis()[pos.Linha, pos.Coluna];
+        }
         public Peca(Tabuleiro tab, Cor cor)
         {
             this.cor = cor;
