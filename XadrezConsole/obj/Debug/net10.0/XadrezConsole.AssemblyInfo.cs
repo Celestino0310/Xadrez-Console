@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("XadrezConsole")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2149efafb6c5aa1863f8614820aa93ed1b5d7b01")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+baffa08b05c32073e2c5e3097ee0960304c50941")]
 [assembly: System.Reflection.AssemblyProductAttribute("XadrezConsole")]
 [assembly: System.Reflection.AssemblyTitleAttribute("XadrezConsole")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

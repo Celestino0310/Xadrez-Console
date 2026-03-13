@@ -23,7 +23,7 @@ namespace XadrezConsole
         }
         static void SomPecaColocada()
         {
-            //Console.Beep(120, 25);
+            //Console.Beep(120, 25); pra deixa mais alto 
           
             Console.Beep(50, 40);
         }
