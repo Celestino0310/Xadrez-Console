@@ -60,7 +60,7 @@ namespace Xadrez
         /// </summary>
         public void validarPosicaoDeDestino(Posicao origem, Posicao destino)
         {
-            if (!Tab.peca(origem).podeMoverPara(destino))
+            if (!Tab.peca(origem).movimentoPossivel(destino))
                 throw new TabuleiroException("POSIÇÃO DE DESTINO INVÁLIDA!");
         }
 
@@ -167,10 +167,10 @@ namespace Xadrez
             return false;
         }
 
-        /// <summary>
-        /// Verifica se a cor informada está em xeque-mate:
-        /// está em xeque E nenhum movimento de nenhuma peça consegue sair do xeque.
-        /// </summary>
+       
+        // Verifica se a cor informada está em xeque-mate:
+        // está em xeque E nenhum movimento de nenhuma peça consegue sair do xeque.
+      
         public bool XequeMate(Cor cor)
         {
             if (!estaEmXeque(cor)) return false;
@@ -185,8 +185,8 @@ namespace Xadrez
                     {
                         if (mat[i, j])
                         {
-                            // BUG CORRIGIDO: x.posicao pode ser null se a peça foi movida.
-                            // Guardamos a origem ANTES de mover.
+                            
+                            // Guarde a origem ANTES de mover.
                             Posicao origem = x.posicao;
                             Posicao destino = new Posicao(i, j);
 
@@ -209,9 +209,7 @@ namespace Xadrez
         // CONJUNTOS DE PEÇAS
         // ---------------------------------------------------------------
 
-        /// <summary>
-        /// Retorna todas as peças capturadas de uma determinada cor.
-        /// </summary>
+       
         public HashSet<Peca> CapturadasPorCor(Cor cor)
         {
             HashSet<Peca> aux = new HashSet<Peca>();
@@ -307,11 +305,14 @@ namespace Xadrez
         /// </summary>
         public void tabuleiroTeste()
         {
-            colocarNovaPeca('b', 1, new Torre(Tab, Cor.Branca));
+            
             colocarNovaPeca('e', 1, new Rei(Tab, Cor.Branca));
             colocarNovaPeca('h', 1, new Torre(Tab, Cor.Branca));
+            colocarNovaPeca('c', 1, new Bispo(Tab, Cor.Branca));
+            colocarNovaPeca('g', 8, new Dama(Tab, Cor.Branca));
             //pretas
-            colocarNovaPeca('b', 8, new Torre(Tab, Cor.Preta));
+            colocarNovaPeca('f', 8, new Bispo(Tab, Cor.Preta));
+            colocarNovaPeca('g', 1, new Cavalo(Tab, Cor.Preta));
             colocarNovaPeca('a', 8, new Rei(Tab, Cor.Preta));
         }
     }

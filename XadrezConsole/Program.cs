@@ -2,11 +2,31 @@
 using tabuleiro;
 using XadrezConsole.Xadrez;
 using Xadrez;
+using System.Runtime.CompilerServices;
 
 namespace XadrezConsole
 {
     class Program
-    {
+    {   
+        private static void music()
+        {
+            Console.Beep(1047, 120); // Tu
+            Console.Beep(1047, 120); // tu
+            Console.Beep(1047, 120); // tu
+            Thread.Sleep(60);
+            Console.Beep(1047, 180); // TÚ (nota longa)
+            Thread.Sleep(60);
+            Console.Beep(784, 120); // tu
+            Console.Beep(880, 120); // ru
+            Console.Beep(1047, 400);
+            Console.WriteLine("END GAME");
+        }
+        static void SomPecaColocada()
+        {
+            //Console.Beep(120, 25);
+          
+            Console.Beep(50, 40);
+        }
         public static void Main(string[] args)
         {   //INSTANCIANDO AS CLASSES NECESSÁRIAS
 
@@ -29,7 +49,7 @@ namespace XadrezConsole
                         Posicao origem = Tela.lerPosicaoXadrez().ToPositionXadrez();
                         partida.validarPosicaoDeOrigem(origem);
                         bool[,] posicoesPossiveis = partida.Tab.peca(origem).movimentosPossiveis();
-                        Console.Clear();
+                        Console.Clear(); 
 
                         Tela.imprimirTabuleiro(partida.Tab, posicoesPossiveis);
 
@@ -37,6 +57,7 @@ namespace XadrezConsole
                         Posicao destino = Tela.lerPosicaoXadrez().ToPositionXadrez();
                         partida.validarPosicaoDeDestino(origem,destino);
                         partida.realizaJogada(origem, destino);
+                        SomPecaColocada();
                     }
                     catch (TabuleiroException ex)
                     {
@@ -44,17 +65,8 @@ namespace XadrezConsole
                     }
                 }
                 Console.WriteLine("XEQUE MATE!!");
-                Console.WriteLine("VENCEDOR JOGADOR :" + partida.JogadorAtual);// ta dando o jogador oposto pois ta passando o turno..tem que arruma isso aqui
-                Console.Beep(1047, 120); // Tu
-                Console.Beep(1047, 120); // tu
-                Console.Beep(1047, 120); // tu
-                Thread.Sleep(60);
-                Console.Beep(1047, 180); // TÚ (nota longa)
-                Thread.Sleep(60);
-                Console.Beep(784, 120); // tu
-                Console.Beep(880, 120); // ru
-                Console.Beep(1047, 400);
-                Console.WriteLine("END GAME");
+                Console.WriteLine("PERDEDOR: Jogador de " + partida.JogadorAtual);// ta dando o jogador oposto pois ta passando o turno..tem que arruma isso aqui
+                music();
             }catch (TabuleiroException ex)
             {
                 Console.WriteLine(ex.Message);
