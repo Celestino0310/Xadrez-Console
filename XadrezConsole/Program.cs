@@ -44,6 +44,8 @@ namespace XadrezConsole
                 {
                     try
                     {
+                        Console.SetWindowSize(50, 30);   // largura x altura
+                        Console.SetBufferSize(50, 30);   // buffer igual à janela evita scrollbar
                         Tela.imprimirPartida(partida);
                         Console.Write("posição de origem:");
                         Posicao origem = Tela.lerPosicaoXadrez().ToPositionXadrez();
