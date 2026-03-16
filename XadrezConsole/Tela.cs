@@ -189,13 +189,34 @@ namespace XadrezConsole
         /// <summary>
         /// Lê uma posição digitada pelo jogador no formato xadrez (ex: "e2")
         /// e converte para um objeto PosicaoXadrez.
+        /// Valida o formato, a coluna (a-h) e a linha (1-8) antes de retornar.
         /// </summary>
         /// <returns>A posição lida convertida em PosicaoXadrez.</returns>
+        /// <exception cref="TabuleiroException">
+        /// Lançada se o input estiver vazio, mal formatado ou fora dos limites do tabuleiro.
+        /// </exception>
         public static PosicaoXadrez lerPosicaoXadrez()
         {
             string s = Console.ReadLine().ToLower();
+
+            // Valida se o input tem pelo menos 2 caracteres (ex: "e2")
+            if (s.Length < 2)
+                throw new TabuleiroException("POSIÇÃO INVÁLIDA! Digite no formato correto. Exemplo: e2");
+
             char coluna = s[0];
-            int linha = int.Parse(s[1] + "");
+
+            // Valida se a coluna é uma letra entre a e h
+            if (coluna < 'a' || coluna > 'h')
+                throw new TabuleiroException("COLUNA INVÁLIDA! Use letras de 'a' até 'h'");
+
+            // Valida se o segundo caractere é um número válido
+            if (!int.TryParse(s[1].ToString(), out int linha))
+                throw new TabuleiroException("LINHA INVÁLIDA! Use números de 1 até 8");
+
+            // Valida se a linha está no intervalo correto
+            if (linha < 1 || linha > 8)
+                throw new TabuleiroException("LINHA INVÁLIDA! Use números de 1 até 8");
+
             return new PosicaoXadrez(coluna, linha);
         }
     }
