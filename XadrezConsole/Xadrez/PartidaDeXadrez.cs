@@ -7,22 +7,37 @@ namespace Xadrez
 {
     /// <summary>
     /// Controla toda a lógica de uma partida de xadrez:
-    /// turnos, movimentos, xeque e xeque-mate.
+    /// turnos, movimentos, xeque, xeque-mate e jogadas especiais.
     /// </summary>
     public class PartidaDeXadrez
     {
+        /// <summary>Tabuleiro da partida.</summary>
         public Tabuleiro Tab { get; private set; }
+
+        /// <summary>Número do turno atual (inicia em 1).</summary>
         public int Turno { get; private set; }
+
+        /// <summary>Cor do jogador que deve realizar a próxima jogada.</summary>
         public Cor JogadorAtual { get; private set; }
+
+        /// <summary>Indica se o Rei do jogador atual está em xeque.</summary>
         public bool Xeque { get; private set; }
+
+        /// <summary>Indica se a partida foi encerrada por xeque-mate.</summary>
         public bool Terminada { get; private set; }
+
+        /// <summary>
+        /// Peão vulnerável ao En Passant no turno atual.
+        /// Definido quando um peão avança 2 casas — válido apenas no turno seguinte.
+        /// </summary>
         public Peca VulneravelEnPassant { get; private set; }
 
         private HashSet<Peca> pecas;
         private HashSet<Peca> Capituradas;
 
         /// <summary>
-        /// Inicializa uma nova partida, criando o tabuleiro e posicionando as peças.
+        /// Inicializa uma nova partida, criando o tabuleiro 8x8
+        /// e posicionando todas as peças na configuração inicial.
         /// </summary>
         public PartidaDeXadrez()
         {
@@ -31,6 +46,7 @@ namespace Xadrez
             JogadorAtual = Cor.Branca;
             Terminada = false;
             Xeque = false;
+            VulneravelEnPassant = null;
             pecas = new HashSet<Peca>();
             Capituradas = new HashSet<Peca>();
             tabuleiroinicial();
@@ -44,6 +60,8 @@ namespace Xadrez
         /// Valida se a posição de origem escolhida pelo jogador é legal:
         /// deve existir uma peça, ser da cor do jogador atual e ter movimentos disponíveis.
         /// </summary>
+        /// <param name="pos">Posição de origem a validar.</param>
+        /// <exception cref="TabuleiroException">Lançada se a origem for inválida.</exception>
         public void validarPosicaoDeOrigem(Posicao pos)
         {
             if (Tab.peca(pos) == null)
@@ -59,6 +77,9 @@ namespace Xadrez
         /// <summary>
         /// Valida se a posição de destino é alcançável pela peça de origem.
         /// </summary>
+        /// <param name="origem">Posição da peça a mover.</param>
+        /// <param name="destino">Posição de destino desejada.</param>
+        /// <exception cref="TabuleiroException">Lançada se o destino for inválido.</exception>
         public void validarPosicaoDeDestino(Posicao origem, Posicao destino)
         {
             if (!Tab.peca(origem).movimentoPossivel(destino))
@@ -71,8 +92,11 @@ namespace Xadrez
 
         /// <summary>
         /// Executa fisicamente o movimento de uma peça no tabuleiro.
-        /// Captura a peça adversária no destino, se houver.
+        /// Trata automaticamente as jogadas especiais:
+        /// roque pequeno, roque grande e en passant.
         /// </summary>
+        /// <param name="origem">Posição de origem da peça.</param>
+        /// <param name="destino">Posição de destino da peça.</param>
         /// <returns>A peça capturada, ou null se nenhuma foi capturada.</returns>
         public Peca MovimentaPeca(Posicao origem, Posicao destino)
         {
@@ -83,7 +107,8 @@ namespace Xadrez
 
             if (pecaCapturada != null)
                 Capituradas.Add(pecaCapturada);
-            //especial move rock
+
+            // Jogada especial: Roque Pequeno (Rei move 2 casas para direita)
             if (p is Rei && destino.Coluna == origem.Coluna + 2)
             {
                 Posicao OrigemT = new Posicao(origem.Linha, origem.Coluna + 3);
@@ -93,7 +118,7 @@ namespace Xadrez
                 Tab.colocarPeca(T, DestinoT);
             }
 
-            //especial move rock grande
+            // Jogada especial: Roque Grande (Rei move 2 casas para esquerda)
             if (p is Rei && destino.Coluna == origem.Coluna - 2)
             {
                 Posicao OrigemT = new Posicao(origem.Linha, origem.Coluna - 4);
@@ -102,41 +127,30 @@ namespace Xadrez
                 T.IncrementarQtdMovimentos();
                 Tab.colocarPeca(T, DestinoT);
             }
-            //especial en passant
-            if (p is Peao)
+
+            // Jogada especial: En Passant
+            // Ocorre quando o peão move na diagonal para casa vazia
+            if (p is Peao && pecaCapturada == null && origem.Coluna != destino.Coluna)
             {
+                Posicao PosP = p.cor == Cor.Branca
+                    ? new Posicao(destino.Linha + 1, destino.Coluna)
+                    : new Posicao(destino.Linha - 1, destino.Coluna);
 
-                if (pecaCapturada == null && origem.Coluna != destino.Coluna)
-                {
-                    Posicao PosP;
-                    if (p.cor == Cor.Branca)
-                    {
-
-                        PosP = new Posicao(destino.Linha + 1, destino.Coluna);
-                    }
-                    else
-                    {
-
-                        PosP = new Posicao(destino.Linha - 1, destino.Coluna);
-
-                    }
-                    pecaCapturada = Tab.retirarPeca(PosP);
-                    Capituradas.Add(pecaCapturada);
-
-
-
-
-                }
-
-
+                pecaCapturada = Tab.retirarPeca(PosP);
+                Capituradas.Add(pecaCapturada);
             }
+
             return pecaCapturada;
         }
 
         /// <summary>
-        /// Desfaz um movimento, devolvendo as peças às posições originais.
-        /// Usado para testar xeque/xeque-mate sem alterar o estado real da partida.
+        /// Desfaz um movimento, devolvendo todas as peças às posições originais.
+        /// Também desfaz corretamente as jogadas especiais (roque e en passant).
+        /// Usado para simular jogadas durante a verificação de xeque/xeque-mate.
         /// </summary>
+        /// <param name="origem">Posição de origem da peça movida.</param>
+        /// <param name="destino">Posição de destino onde a peça foi colocada.</param>
+        /// <param name="capturada">Peça que foi capturada no movimento (pode ser null).</param>
         public void desfazMovimento(Posicao origem, Posicao destino, Peca capturada)
         {
             Peca p = Tab.retirarPeca(destino);
@@ -149,7 +163,8 @@ namespace Xadrez
             }
 
             Tab.colocarPeca(p, origem);
-            //especial rock desfazer
+
+            // Desfaz Roque Pequeno
             if (p is Rei && destino.Coluna == origem.Coluna + 2)
             {
                 Posicao OrigemT = new Posicao(origem.Linha, origem.Coluna + 3);
@@ -159,78 +174,62 @@ namespace Xadrez
                 Tab.colocarPeca(T, OrigemT);
             }
 
-            //especial move rock grande
+            // Desfaz Roque Grande
             if (p is Rei && destino.Coluna == origem.Coluna - 2)
             {
                 Posicao OrigemT = new Posicao(origem.Linha, origem.Coluna - 4);
                 Posicao DestinoT = new Posicao(origem.Linha, origem.Coluna - 1);
                 Peca T = Tab.retirarPeca(DestinoT);
-                T.IncrementarQtdMovimentos();
+                T.decrementarQtdMovimentos();
                 Tab.colocarPeca(T, OrigemT);
             }
-            //especial en passant
-            if (p is Peao)
+
+            // Desfaz En Passant: reposiciona o peão capturado na casa original
+            if (p is Peao && capturada == VulneravelEnPassant && origem.Coluna != destino.Coluna)
             {
+                Peca peao = Tab.retirarPeca(destino);
+                Posicao PosP = p.cor == Cor.Branca
+                    ? new Posicao(3, destino.Coluna)
+                    : new Posicao(4, destino.Coluna);
 
-                if (capturada == VulneravelEnPassant && origem.Coluna != destino.Coluna)
-                {
-                    Peca peao = Tab.retirarPeca(destino);
-                    Posicao PosP;
-                    if (p.cor == Cor.Branca)
-                    {
-
-                        PosP = new Posicao(3, destino.Coluna);
-                    }
-                    else
-                    {
-
-                        PosP = new Posicao(4, destino.Coluna);
-
-                    }
-                    Tab.colocarPeca(peao,PosP);
-                    Capituradas.Remove(capturada);
-
-
-
-
-                }
+                Tab.colocarPeca(peao, PosP);
+                Capituradas.Remove(capturada);
             }
-
-
         }
 
         /// <summary>
         /// Realiza a jogada completa: move a peça, verifica auto-xeque,
-        /// verifica xeque/xeque-mate no adversário e passa o turno.
+        /// trata promoção de peão, verifica xeque/xeque-mate no adversário,
+        /// atualiza o VulneravelEnPassant e passa o turno.
         /// </summary>
+        /// <param name="origem">Posição de origem da peça.</param>
+        /// <param name="destino">Posição de destino da peça.</param>
+        /// <exception cref="TabuleiroException">Lançada se o movimento deixar o próprio Rei em xeque.</exception>
         public void realizaJogada(Posicao origem, Posicao destino)
         {
             Peca pecaCapturada = MovimentaPeca(origem, destino);
 
-            // BUG CORRIGIDO: não pode deixar o próprio rei em xeque após mover,erro grande
+            // Não é permitido deixar o próprio Rei em xeque
             if (estaEmXeque(JogadorAtual))
             {
                 desfazMovimento(origem, destino, pecaCapturada);
                 throw new TabuleiroException("VOCÊ NÃO PODE DEIXAR SEU REI EM XEQUE!");
             }
-            //PROMOÇÃO DE PEÃO
+
+            // Promoção de Peão: ao atingir a última fileira, promove automaticamente para Dama
             Peca p = Tab.peca(destino);
-            if(p is Peao)
+            if (p is Peao)
             {
-                if (p.cor == Cor.Branca &&  destino.Linha==0 || p.cor == Cor.Preta && destino.Linha==7)
+                if ((p.cor == Cor.Branca && destino.Linha == 0) ||
+                    (p.cor == Cor.Preta && destino.Linha == 7))
                 {
                     p = Tab.retirarPeca(destino);
                     pecas.Remove(p);
-                    Dama dama = new Dama(Tab,p.cor);
+                    Dama dama = new Dama(Tab, p.cor);
                     Tab.colocarPeca(dama, destino);
                     pecas.Add(dama);
-
-
                 }
-                
-
             }
-
 
             // Verifica se o adversário ficou em xeque ou xeque-mate
             Xeque = estaEmXeque(corAdversaria(JogadorAtual));
@@ -245,17 +244,12 @@ namespace Xadrez
                 MudaJogador();
             }
 
+            // Atualiza o peão vulnerável ao En Passant (válido apenas por 1 turno)
             p = Tab.peca(destino);
             if (p is Peao && (destino.Linha == origem.Linha - 2 || destino.Linha == origem.Linha + 2))
-            {
                 VulneravelEnPassant = p;
-
-
-            }
             else
-            {
                 VulneravelEnPassant = null;
-            }
         }
 
         // ---------------------------------------------------------------
@@ -263,30 +257,29 @@ namespace Xadrez
         // ---------------------------------------------------------------
 
         /// <summary>
-        /// Retorna o Rei da cor informada, buscando entre as peças em jogo.
-        /// Lança exceção se o Rei não for encontrado (estado inválido).
+        /// Retorna o Rei da cor informada buscando entre as peças em jogo.
         /// </summary>
+        /// <param name="cor">Cor do Rei a localizar.</param>
+        /// <returns>A peça Rei da cor informada.</returns>
+        /// <exception cref="TabuleiroException">Lançada se o Rei não existir (estado inválido).</exception>
         private Peca Rei(Cor cor)
         {
             foreach (Peca x in PecasEmJogo(cor))
             {
-                if (x is Rei)
-                    return x;
+                if (x is Rei) return x;
             }
             throw new TabuleiroException("NÃO EXISTE REI DA COR " + cor + " NA PARTIDA!");
-            // BUG CORRIGIDO: retornar null aqui ocultava erros graves de estado
         }
 
         /// <summary>
         /// Verifica se o Rei da cor informada está em xeque.
-        /// Percorre todas as peças ADVERSÁRIAS e checa se alguma alcança o Rei.
+        /// Percorre todas as peças adversárias e checa se alguma alcança o Rei.
         /// </summary>
+        /// <param name="cor">Cor do Rei a verificar.</param>
+        /// <returns>True se o Rei estiver em xeque.</returns>
         public bool estaEmXeque(Cor cor)
         {
             Peca R = Rei(cor);
-
-            // BUG CORRIGIDO: era PecasEmJogo(cor) — deve ser as peças ADVERSÁRIAS
-            // que ameaçam o Rei, não as da mesma cor!
             foreach (Peca x in PecasEmJogo(corAdversaria(cor)))
             {
                 bool[,] mat = x.movimentosPossiveis();
@@ -296,10 +289,12 @@ namespace Xadrez
             return false;
         }
 
-
-        // Verifica se a cor informada está em xeque-mate:
-        // está em xeque E nenhum movimento de nenhuma peça consegue sair do xeque.
-
+        /// <summary>
+        /// Verifica se a cor informada está em xeque-mate:
+        /// está em xeque E nenhum movimento de nenhuma peça consegue sair do xeque.
+        /// </summary>
+        /// <param name="cor">Cor a verificar.</param>
+        /// <returns>True se for xeque-mate.</returns>
         public bool XequeMate(Cor cor)
         {
             if (!estaEmXeque(cor)) return false;
@@ -307,30 +302,22 @@ namespace Xadrez
             foreach (Peca x in PecasEmJogo(cor))
             {
                 bool[,] mat = x.movimentosPossiveis();
-
                 for (int i = 0; i < Tab.Linhas; i++)
                 {
                     for (int j = 0; j < Tab.Colunas; j++)
                     {
                         if (mat[i, j])
                         {
-
-                            // Guarde a origem ANTES de mover.
                             Posicao origem = x.posicao;
                             Posicao destino = new Posicao(i, j);
-
                             Peca capturada = MovimentaPeca(origem, destino);
                             bool aindaEmXeque = estaEmXeque(cor);
                             desfazMovimento(origem, destino, capturada);
-
-                            // Se encontrou ao menos um movimento que sai do xeque, não é mate
                             if (!aindaEmXeque) return false;
                         }
                     }
                 }
             }
-
-            // Todos os movimentos testados mantiveram o xeque: é xeque-mate
             return true;
         }
 
@@ -338,14 +325,16 @@ namespace Xadrez
         // CONJUNTOS DE PEÇAS
         // ---------------------------------------------------------------
 
-
+        /// <summary>
+        /// Retorna todas as peças capturadas de uma determinada cor.
+        /// </summary>
+        /// <param name="cor">Cor das peças capturadas a filtrar.</param>
         public HashSet<Peca> CapturadasPorCor(Cor cor)
         {
             HashSet<Peca> aux = new HashSet<Peca>();
             foreach (Peca x in Capituradas)
             {
-                if (x.cor == cor)
-                    aux.Add(x);
+                if (x.cor == cor) aux.Add(x);
             }
             return aux;
         }
@@ -353,13 +342,13 @@ namespace Xadrez
         /// <summary>
         /// Retorna todas as peças ainda em jogo (não capturadas) de uma determinada cor.
         /// </summary>
+        /// <param name="cor">Cor das peças a filtrar.</param>
         public HashSet<Peca> PecasEmJogo(Cor cor)
         {
             HashSet<Peca> aux = new HashSet<Peca>();
             foreach (Peca x in pecas)
             {
-                if (x.cor == cor)
-                    aux.Add(x);
+                if (x.cor == cor) aux.Add(x);
             }
             aux.ExceptWith(CapturadasPorCor(cor));
             return aux;
@@ -393,6 +382,9 @@ namespace Xadrez
         /// Coloca uma nova peça no tabuleiro usando notação xadrez (ex: 'e', 1).
         /// Registra a peça no conjunto geral de peças da partida.
         /// </summary>
+        /// <param name="coluna">Coluna em notação xadrez ('a' a 'h').</param>
+        /// <param name="linha">Linha em notação xadrez (1 a 8).</param>
+        /// <param name="peca">Peça a ser colocada.</param>
         public void colocarNovaPeca(char coluna, int linha, Peca peca)
         {
             Tab.colocarPeca(peca, new PosicaoXadrez(coluna, linha).ToPositionXadrez());
@@ -400,7 +392,8 @@ namespace Xadrez
         }
 
         /// <summary>
-        /// Posiciona todas as peças para uma partida completa de xadrez.
+        /// Posiciona todas as peças para uma partida completa de xadrez
+        /// na configuração oficial inicial.
         /// </summary>
         public void tabuleiroinicial()
         {
@@ -431,25 +424,18 @@ namespace Xadrez
 
         /// <summary>
         /// Posicionamento reduzido para testes rápidos de lógica.
+        /// Inclui apenas Torres, Reis e Peões para ambos os lados.
         /// </summary>
         public void tabuleiroTeste()
         {
-
-
-            // Brancas
             colocarNovaPeca('a', 1, new Torre(Tab, Cor.Branca));
-
             colocarNovaPeca('e', 1, new Rei(Tab, Cor.Branca, this));
-
             colocarNovaPeca('h', 1, new Torre(Tab, Cor.Branca));
             for (char c = 'a'; c <= 'h'; c++)
                 colocarNovaPeca(c, 2, new Peao(Tab, Cor.Branca, this));
 
-            // Pretas
             colocarNovaPeca('a', 8, new Torre(Tab, Cor.Preta));
-
             colocarNovaPeca('e', 8, new Rei(Tab, Cor.Preta, this));
-
             colocarNovaPeca('h', 8, new Torre(Tab, Cor.Preta));
             for (char c = 'a'; c <= 'h'; c++)
                 colocarNovaPeca(c, 7, new Peao(Tab, Cor.Preta, this));
